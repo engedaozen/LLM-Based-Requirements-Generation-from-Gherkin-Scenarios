@@ -1,0 +1,11 @@
+Flask
+Flask-Cors
+google-genai
+requests
+python-dotenv
+pydantic
+gherkin-official
+python-docx
+openpyxl
+behave
+pytest

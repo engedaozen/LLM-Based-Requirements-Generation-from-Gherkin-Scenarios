@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BDD to Requirements Generator</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>BDD to Requirements Generator</h1>
+            <p>Convert your BDD scenarios into technical artifacts using AI</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: BDD Input -->
+            <div class="panel input-panel">
+                <div class="panel-header">
+                    <h2>BDD Scenario</h2>
+                    <button class="btn-secondary" onclick="clearInput()">Clear</button>
+                </div>
+
+                <!-- Feature + Scenario Selection -->
+                <div class="picker-row">
+                    <div class="picker-grid">
+                        <div class="picker-col">
+                            <label for="featureSelect">Select Feature</label>
+                            <select id="featureSelect" class="select" onchange="onFeatureChange()">
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+
+                        <div class="picker-col">
+                            <label for="scenarioSelect">Select Scenario</label>
+                            <select id="scenarioSelect" class="select" onchange="onScenarioChange()" disabled>
+                                <option value="">Select a feature first</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="picker-actions">
+                        <button class="btn-secondary" onclick="loadSelectedScenarioToEditor()" id="loadScenarioBtn" disabled>
+                            Load Selected Scenario into Editor
+                        </button>
+                        <button class="btn-secondary" onclick="loadWholeFeatureToEditor()" id="loadFeatureBtn" disabled>
+                            Load Entire Feature into Editor
+                        </button>
+                    </div>
+
+                    <small id="selectedInfo">No selection made.</small>
+                </div>
+
+                <textarea 
+                    id="bddInput" 
+                    placeholder="Feature: User Registration
+Scenario: Successful registration
+  Given the user is on the registration page
+  When valid information is entered
+  Then the system registers the user"
+                ></textarea>
+                
+                <!-- Action buttons -->
+                <div class="button-group">
+                    <button class="btn-primary" onclick="handleGenerateRequirements()">
+                        <span class="btn-icon">*</span>
+                        Generate Requirements
+                    </button>
+                    <button class="btn-primary btn-test" onclick="handleGenerateTestCases()">
+                        <span class="btn-icon">T</span>
+                        Generate Test Cases
+                    </button>
+                    <button class="btn-primary btn-uml" onclick="showUMLDialog()">
+                        <span class="btn-icon">U</span>
+                        Generate UML Diagram
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Outputs -->
+            <div class="panel output-panel">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('requirements')">Requirements</button>
+                    <button class="tab-btn" onclick="switchTab('testcases')">Test Cases</button>
+                    <button class="tab-btn" onclick="switchTab('uml')">UML Diagram</button>
+                </div>
+
+                <!-- Requirements Tab -->
+                <div id="requirements-tab" class="tab-content active">
+                    <div class="panel-header">
+                        <h2>Requirements</h2>
+                        <div class="action-buttons">
+                            <button class="btn-secondary" onclick="copyOutput('requirements')">Copy</button>
+                            <button class="btn-secondary" onclick="downloadOutput('requirements', 'md')">Download</button>
+                            <select id="requirements-lang" class="btn-secondary" onchange="handleTranslateOutput('requirements')">
+                                    <option value="" selected disabled>Translate</option>
+                                    <option value="Turkish">Türkçe</option>
+                                    <option value="English">English</option>
+                                    <option value="German">Deutsch</option>
+                                    <option value="French">Français</option>
+                                    <option value="Spanish">Español</option>
+                                    <option value="Italian">Italiano</option>
+                                    <option value="Russian">Русский</option>
+                                    <option value="Arabic">العربية</option>
+                                    <option value="Chinese">中文</option>
+                                    <option value="Japanese">日本語</option>
+                        </select>
+                        </div>
+                    </div>
+                    <div id="requirements-output" class="output-content">
+                        <div class="placeholder">
+                            <div class="placeholder-icon">TARGET</div>
+                            <p>Requirements will appear here...</p>
+                            <p class="placeholder-hint">
+                                Enter a BDD scenario on the left and click "Generate Requirements"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Cases Tab -->
+                <div id="testcases-tab" class="tab-content">
+                    <div class="panel-header">
+                        <h2>Test Cases</h2>
+                        <div class="action-buttons">
+                            <button class="btn-secondary" onclick="copyOutput('testcases')">Copy</button>
+                            <button class="btn-secondary" onclick="downloadOutput('testcases', 'md')">Download</button>
+                            <select id="testcases-lang" class="btn-secondary" onchange="handleTranslateOutput('testcases')">
+                                    <option value="" selected disabled>Translate</option>
+                                    <option value="Turkish">Türkçe</option>
+                                    <option value="English">English</option>
+                                    <option value="German">Deutsch</option>
+                                    <option value="French">Français</option>
+                                    <option value="Spanish">Español</option>
+                                    <option value="Italian">Italiano</option>
+                                    <option value="Russian">Русский</option>
+                                    <option value="Arabic">العربية</option>
+                                    <option value="Chinese">中文</option>
+                                    <option value="Japanese">日本語</option>
+                        </select>
+                        
+                      </div>
+                    </div>
+                    <div id="testcases-output" class="output-content">
+                        <div class="placeholder">
+                            <div class="placeholder-icon">TEST</div>
+                            <p>Test cases will appear here...</p>
+                            <p class="placeholder-hint">Click "Generate Test Cases"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UML Diagram Tab -->
+                <div id="uml-tab" class="tab-content">
+                    <div class="panel-header">
+                        <h2>UML Diagram</h2>
+                        <div class="action-buttons">
+                            <button class="btn-secondary" onclick="copyOutput('uml')">Copy</button>
+                            <button class="btn-secondary" onclick="downloadDiagram()">Download</button>
+                            <select id="uml-lang" class="btn-secondary" onchange="handleTranslateOutput('uml')">
+                                    <option value="" selected disabled>Translate</option>
+                                    <option value="Turkish">Türkçe</option>
+                                    <option value="English">English</option>
+                                    <option value="German">Deutsch</option>
+                                    <option value="French">Français</option>
+                                    <option value="Spanish">Español</option>
+                                    <option value="Italian">Italiano</option>
+                                    <option value="Russian">Русский</option>
+                                    <option value="Arabic">العربية</option>
+                                    <option value="Chinese">中文</option>
+                                    <option value="Japanese">日本語</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="uml-output" class="output-content">
+                        <div class="placeholder">
+                            <div class="placeholder-icon">UML</div>
+                            <p>UML diagram will appear here...</p>
+                            <p class="placeholder-hint">
+                                Click "Generate UML Diagram" and select a diagram type
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="panel artifact-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Managed Artifacts</h2>
+                    <small>Review, compare, regenerate and export validated outputs.</small>
+                </div>
+                <div class="artifact-toolbar">
+                    <select id="artifactTypeFilter" class="btn-secondary" onchange="loadArtifacts()">
+                        <option value="">All types</option>
+                        <option value="requirements">Requirements</option>
+                        <option value="testcases">Test cases</option>
+                        <option value="uml">UML</option>
+                    </select>
+                    <button class="btn-secondary" onclick="loadArtifacts()">Refresh</button>
+                    <button class="btn-secondary" onclick="compareSelectedArtifacts()">Compare selected</button>
+                </div>
+            </div>
+            <div class="api-key-row">
+                <label for="apiKeyInput">Optional API key</label>
+                <input id="apiKeyInput" type="password" placeholder="APP_API_KEY" autocomplete="off">
+                <button class="btn-secondary" onclick="saveApiKey()">Save locally</button>
+            </div>
+            <div id="artifactList" class="artifact-list"></div>
+            <h3>Comparison</h3>
+            <div id="comparison-output" class="output-content compact-output">
+                <p class="placeholder-hint">Select two artifacts and click Compare selected.</p>
+            </div>
+        </section>
+
+        <!-- UML Dialog Modal -->
+        <div id="umlDialog" class="modal hidden">
+            <div class="modal-content">
+                <h2>Select UML Diagram Type</h2>
+                <p>Which UML diagram would you like to generate?</p>
+                <div class="diagram-options">
+                    <button class="diagram-btn" onclick="handleGenerateUMLDiagram('usecase')">
+                        <span class="diagram-icon">UC</span>
+                        <span>Use Case Diagram</span>
+                    </button>
+                    <button class="diagram-btn" onclick="handleGenerateUMLDiagram('sequence')">
+                        <span class="diagram-icon">SQ</span>
+                        <span>Sequence Diagram</span>
+                    </button>
+                    <button class="diagram-btn" onclick="handleGenerateUMLDiagram('class')">
+                        <span class="diagram-icon">CL</span>
+                        <span>Class Diagram</span>
+                    </button>
+                    <button class="diagram-btn" onclick="handleGenerateUMLDiagram('activity')">
+                        <span class="diagram-icon">AC</span>
+                        <span>Activity Diagram</span>
+                    </button>
+                    <button class="diagram-btn" onclick="handleGenerateUMLDiagram('state')">
+                        <span class="diagram-icon">ST</span>
+                        <span>State Diagram</span>
+                    </button>
+                </div>
+                <button class="btn-secondary" onclick="closeUMLDialog()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="loading-spinner"></div>
+            <p>AI is analyzing...</p>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
